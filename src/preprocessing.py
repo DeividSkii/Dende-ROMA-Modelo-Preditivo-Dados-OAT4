@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 #Função para carregar os dados
@@ -37,23 +38,21 @@ def encoder_categoricas(train, test):
 
     #Seleciona as colunas categóricas do datatest
     colunas_categoricas = [
-        "team_name",
+        "confederation",
         "country_code",
-        "confederation"
+        "team_name"
     ]
 
     #Aplica o one hot no treino
     train = pd.get_dummies(
         train,
-        columns=colunas_categoricas,
-        drop_first=True
+        columns=colunas_categoricas
     )
 
     #Aplica one hot no teste
     test = pd.get_dummies(
         test,
-        columns=colunas_categoricas,
-        drop_first=True
+        columns=colunas_categoricas
     )
 
     #Armazena a variável alvo temporariamente
@@ -70,29 +69,23 @@ def encoder_categoricas(train, test):
         fill_value=0
     )
 
-    #Reinsere a variável alvo
     train["winner"] = winner
 
     return train, test
 
 #Padronização dos dados numéricos
-def standard_scaler(train, test):
-
-    #Remove variável alvo das features
-    X_train = train.drop("winner", axis=1)
-
-    #Define o target
-    y_train = train["winner"]
-
-    #Remove o winner do teste, caso exista
-    X_test = test.drop("winner", axis=1, errors="ignore")
+def standard_scaler(X_train, X_val, X_test):
 
     scaler = StandardScaler()
 
+    #aprende a média e desvio padrao do treino
     X_train_scaled = scaler.fit_transform(X_train)
+
+    #Aplica a transformação nos demais conjuntos
+    X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
 
-    return X_train_scaled, y_train, X_test_scaled
+    return X_train_scaled, X_val_scaled, X_test_scaled
 
 def preprocess(debug=False):
 
@@ -111,17 +104,29 @@ def preprocess(debug=False):
         validar_dataset(train_data)
         separar_colunas(train_data)
 
+    #Aplica encoding nas categorias
     train, test = encoder_categoricas(
         train_data,
         test_data
     )
 
+    #Separa variável alvo e feature
+    X = train.drop("winner", axis=1)
+    y = train["winner"]
 
-    X_train, y_train, X_test = standard_scaler(
-        train,
-        test
+    #Remove o winner do teste caso ele exista
+    X_test = test.drop("winner", axis=1, errors="ignore")
+
+
+    #DIvide o treino e a validação
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.2, random_state=42
     )
 
-    return X_train, y_train, X_test
+    #Faz a padronização dos dados
+    X_train_scaled, X_val_scaled, X_test_scaled = standard_scaler(
+        X_train, X_val, X_test
+    )
 
-X_train, y_train, X_test = preprocess()
+
+    return X_train_scaled, X_val_scaled, y_train, y_val, X_test_scaled
