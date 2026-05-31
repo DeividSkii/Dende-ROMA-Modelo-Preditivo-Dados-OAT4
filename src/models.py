@@ -32,6 +32,7 @@ def train_knn(X_train, y_train, X_val, y_val):
             prediction
         )
 
+        print(f"O k foi {k}, a acurácia foi {accuracy} e a f1 foi {f1:.3f}")
         #Salva melhor modelo encontrado
         if accuracy > best_acc:
             best_acc = accuracy
@@ -39,11 +40,11 @@ def train_knn(X_train, y_train, X_val, y_val):
             best_k = k
             best_f1 = f1
 
-    print(f"Melhor K: {best_k}")
+
 
     return best_model, best_acc, best_f1
 
-def train_decision_tree(X_train, y_train, X_val, Y_val):
+def train_decision_tree(X_train, y_train, X_val, y_val):
 
     """
     Treina diferentes configurações do algoritmo Decision Tree
@@ -56,7 +57,7 @@ def train_decision_tree(X_train, y_train, X_val, Y_val):
     best_depth = 0
     best_f1 = 0
 
-    #Profundidades testadas
+    #Profundidade testadas
     for depth in [3, 5, 7, 10, None]:
 
         model = DecisionTreeClassifier(max_depth=depth, random_state=67)
@@ -65,11 +66,11 @@ def train_decision_tree(X_train, y_train, X_val, Y_val):
 
         prediction = model.predict(X_val)
 
-        accuracy = accuracy_score(Y_val, prediction)
+        accuracy = accuracy_score(y_val, prediction)
 
-        f1 = f1_score(Y_val,prediction)
+        f1 = f1_score(y_val,prediction)
 
-        print(f"Depth={depth}, Accuracy={accuracy}")
+        print(f"O depth foi {depth}, a acurácia foi {accuracy} e a f1 foi {f1:.3f}")
 
         #Atualiza melhor modelo
         if accuracy > best_acc:
@@ -77,8 +78,6 @@ def train_decision_tree(X_train, y_train, X_val, Y_val):
             best_model = model
             best_depth = depth
             best_f1 = f1
-
-    print(f"Melhor depth: {best_depth}")
 
     return best_model, best_acc, best_f1
 

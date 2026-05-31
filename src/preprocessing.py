@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 #Função para carregar os dados
 def load_data():
@@ -28,6 +28,28 @@ def separar_colunas(df):
     print(f"Colunas Numéricas: {colunas_numericas}")
 
     return colunas_categoricas, colunas_numericas
+
+#Função para tratar dados nulos ou duplicados
+def limpar_dataset(df):
+    """
+    Trata valores ausentes e duplicados no dataset, caso tenha
+    """
+
+    #Remove registros duplicados
+    df = df.drop_duplicates()
+
+    #Verifica percentual de nulos
+    porcentagem_nulos = df.isnull().mean()
+
+    #Remove colunas com muitos nulos
+    colunas_remover = porcentagem_nulos[
+        porcentagem_nulos > 0.5
+    ].index
+
+    df = df.drop(columns=colunas_remover)
+
+    return df
+
 
 #One hot encoder
 def encoder_categoricas(train, test):
@@ -93,11 +115,15 @@ def preprocess(debug=False):
     Executa o pipeline de pré-processamento:
 
     1 - Carrega os dados
-    2 - Faz encoding das categorias
+    2 - Faz limpeza e encoding das categorias
     3 - Padroniza os dados
     4 - Separa X e Y
     """
     train_data, test_data = load_data()
+
+    #Tratamento de valores nulos e duplicados
+    train_data = limpar_dataset(train_data)
+    test_data = limpar_dataset(test_data)
 
     #Executa validações opcionais para debug
     if debug:
@@ -118,7 +144,7 @@ def preprocess(debug=False):
     X_test = test.drop("winner", axis=1, errors="ignore")
 
 
-    #DIvide o treino e a validação
+    #Divide o treino e a validação
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
@@ -126,7 +152,7 @@ def preprocess(debug=False):
     #Faz a padronização dos dados
     X_train_scaled, X_val_scaled, X_test_scaled = standard_scaler(
         X_train, X_val, X_test
-    )
 
+    )
 
     return X_train_scaled, X_val_scaled, y_train, y_val, X_test_scaled

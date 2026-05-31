@@ -2,25 +2,20 @@ from preprocessing import preprocess
 from models import *
 import pandas as pd
 
-X_train, X_val, y_train, Y_val, X_test = preprocess()
+X_train, X_val, y_train, y_val, X_test = preprocess()
 
 #Treina o modelo KNN, que foi escolher por ter a melhor acurácia
 knn_model, knn_acc, knn_f1 = train_knn(
     X_train,
     y_train,
     X_val,
-    Y_val
+    y_val
 )
-
-print("\n===== RESULTADOS DO MODELO =====")
-print(f"Acurácia: {knn_acc:.4f}")
-print(f"F1-score: {knn_f1:.4f}")
-
 
 #Retorna a probabilidades de cada classe, como [0.20, 0.80]
 probabilities = knn_model.predict_proba(X_test)
 
-#Seleciona aenas a probabilidade da classe winner ser 1
+#Seleciona apenas a probabilidade da classe winner ser 1
 winner_probability = probabilities[:, 1]
 
 #Carrega o dataframe com original de teste, para recuperar os nomes dos países
@@ -44,7 +39,7 @@ results = results.sort_values(by="winning_probability", ascending=False)
 
 print(results.head(20))
 
-print("\n===== COMPARAÇÃO DOS MODELOS =====")
+print("\n===== MELHOR MODELO =====")
 
 print(
     f"KNN -> "
